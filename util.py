@@ -115,6 +115,7 @@ def read_yolo_data(save_dir_list, img_path, image_name):
         return img, bbox_list, save_path
 
 def SaveImage(img, bbox, save_path, name):
+    name = name[:-4]
     cv2.imwrite(save_path + name + ".jpg", img)
 
     print(name)
