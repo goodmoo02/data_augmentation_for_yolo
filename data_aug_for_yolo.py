@@ -48,6 +48,22 @@ def RandomScale(img, bbox, scale=0.7, p=1.0):
     return dst,bbox
 
 
+def RandomResize(img, x, y, scale=1.0, p=1.0):
+    src = copy.deepcopy(img)
+
+    if random.random() < p:
+        return img
+
+    if scale == 1.0:
+        dsize = (int(x),int( y))
+        src = cv2.resize(src,dsize,interpolation=cv2.INTER_AREA)
+    else:
+        dsize = (int(src.shape[1] * scale),int(src.shape[0] * scale))
+        src = cv2.resize(src,dsize,interpolation=cv2.INTER_AREA)
+
+    return src
+
+
 def RandomRotate(img,angle,scale=1.0,p=1.0):
     if random.random() > p:
         print("rotate 실행")

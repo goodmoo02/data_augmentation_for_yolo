@@ -47,6 +47,20 @@ def RandomScale(img, bbox, scale=0.7, p=1.0):
                 bbox[i][j] = bbox[i][j] * scale
     return dst,bbox
 
+def RandomResize(img, x, y, scale=1.0, p=1.0):
+    src = copy.deepcopy(img)
+
+    if random.random() < p:
+        return img
+
+    if scale == 1.0:
+        dsize = (int(x),int( y))
+        src = cv2.resize(src,dsize,interpolation=cv2.INTER_AREA)
+    else:
+        dsize = (int(src.shape[1] * scale),int(src.shape[0] * scale))
+        src = cv2.resize(src,dsize,interpolation=cv2.INTER_AREA)
+
+    return src
 
 def RandomRotate(img,angle,scale=1.0,p=1.0):
     if random.random() > p:
@@ -63,12 +77,16 @@ def RandomRotate(img,angle,scale=1.0,p=1.0):
 
 
 if __name__ == "__main__":
-    img = cv2.imread("lena.jpg")
+    img = cv2.imread("../test_img/wolf078.jpg")
 
-    cv2.imshow("img1", img)
+    img2 = RandomResize(img, 600, 400)
+    img3 = RandomResize(img,600,400, 1.5)
 
-    img2, _ = RandomResize(img, [])
+    print(img.shape)
+    print(img2.shape)
+    print(img3.shape)
 
+    cv2.imshow("img",img)
     cv2.imshow("img2", img2)
-    cv2.imwrite("lena_resize.jpg", img2)
+    cv2.imshow("img3",img3)
     cv2.waitKey(0)
