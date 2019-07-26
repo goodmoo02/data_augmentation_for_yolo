@@ -24,7 +24,7 @@ def RandomFlip(img,bboxes,mode=1,p=1.0):
     return img, bboxes
 
 
-def RandomResize(img, bbox, scale=0.7, p=1.0):
+def RandomScale(img, bbox, scale=0.7, p=1.0):
     src = copy.deepcopy(img)
     bbox = copy.deepcopy(bbox)
 
