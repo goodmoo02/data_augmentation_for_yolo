@@ -1,7 +1,7 @@
 import sys, os
 from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QMessageBox, \
         QLabel, QLineEdit, QTextEdit, QHBoxLayout, QHBoxLayout, QPushButton, QSpinBox)
-from PyQt5.QtWidgets import QDoubleSpinBox, QFileDialog, QCheckBox, QVBoxLayout
+from PyQt5.QtWidgets import QDoubleSpinBox, QFileDialog, QCheckBox, QRadioButton
 from PyQt5.QtCore import QCoreApplication
 from qt_test import *
 
@@ -35,7 +35,7 @@ class MyApp(QWidget):
             self.vflip_cb = QCheckBox("vflip", self)
 
             
-            # resize scale spinbox
+            # rescale spinbox
             self.scale = QDoubleSpinBox()
             self.scale.setMinimum(0.3)
             self.scale.setMaximum(1.0)
@@ -45,7 +45,20 @@ class MyApp(QWidget):
             # rotate angle spinbox
             self.angle= QSpinBox()
             self.angle.setRange(0,360)
-            
+
+            # resize contents
+            self.resolution_rb = QRadioButton("Resolution")
+            self.resolution_rb.clicked.connect(self.resize_rb_clicked)
+            self.scale_rb = QRadioButton("Scale")
+            self.scale_rb.clicked.connect(self.resize_rb_clicked)
+            self.res_x = QLineEdit()
+            self.res_y = QLineEdit()
+            self.resize_scale = QLineEdit()
+
+
+            # 경고
+            self.alert = QLabel()
+
             # directory path QLineEdit
             self.path_text= QLineEdit()
             
@@ -53,11 +66,10 @@ class MyApp(QWidget):
 
         def initUI(self):
 
+            # Layout
+
             grid = QGridLayout()
             self.setLayout(grid)
-            
-
-            # Layout
 
             # run / cancel layout
             hbox = QHBoxLayout()
@@ -71,18 +83,37 @@ class MyApp(QWidget):
             flip_box.addWidget(self.hflip_cb)
             flip_box.addWidget(self.vflip_cb)
 
+            # resize sub grid lay out
+            sub_grid = QGridLayout()
+
+            ## resolution hbox
+            resolution_hbox = QHBoxLayout()
+            resolution_hbox.addWidget(QLabel("x"))
+            resolution_hbox.addWidget(self.res_x)
+            resolution_hbox.addWidget(QLabel("y"))
+            resolution_hbox.addWidget(self.res_y)
+
+            ## sub_gric 위젯, 레이어 추가
+            sub_grid.addWidget(self.scale_rb,0,0)
+            sub_grid.addWidget(self.resize_scale,0,1)
+            sub_grid.addWidget(self.resolution_rb,1,0)
+            sub_grid.addLayout(resolution_hbox, 1,1)
+
+
 
             grid.addWidget(QLabel('Directory select'), 0, 0)
             grid.addWidget(QLabel('Flip mode'), 1, 0)
-            grid.addWidget(QLabel('Rescale scale'), 2, 0)
+            grid.addWidget(QLabel('Rescale'), 2, 0)
             grid.addWidget(QLabel('Rotate angle'), 3, 0)
-            grid.addLayout(hbox, 4,0,2,3)
+            grid.addWidget(QLabel('Resize'),4,0)
+            grid.addLayout(hbox, 5,0,1,3)
+            grid.addWidget(self.alert, 6,0,2,3)
 
             grid.addWidget(self.path_text, 0, 1)
             grid.addLayout(flip_box,1,1)
             grid.addWidget(self.scale, 2, 1)
             grid.addWidget(self.angle, 3, 1)
-
+            grid.addLayout(sub_grid,4,1,1,2)
             grid.addWidget(self.select_btn,0,2)
 
             self.setWindowTitle('Augmentator')
@@ -110,14 +141,21 @@ class MyApp(QWidget):
             else:
                 event.ignore()
 
+        def resize_rb_clicked(self):
+            if self.resolution_rb.isChecked():
+                print("resize resolution radio")
+            else:
+                print("resize scale radio")
+
         def run_button_clicked(self):
             print("run button clicked")
 
             if self.path_text.text():
-                main(self.path_text.text(), self.hflip_cb.checkState(), self.vflip_cb.checkState(),self.angle.value(),self.scale.value())
-
+                main(self.path_text.text(), self.hflip_cb.checkState(), self.vflip_cb.checkState(),self.angle.value(),self.scale.value(),self.res_x.text(), self.res_y.text(), self.resize_scale.text())
+                self.alert.setText("실행 완료")
                 print("실행 완료!")
             else:
+                self.alert.setText("이미지 디렉토리를 설정하지 않았습니다.")
                 print("이미지 디렉토리를 설정하지 않았습니다.")
 
 
