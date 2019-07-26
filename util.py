@@ -10,7 +10,7 @@ def check_directory(path):
     else:
         return 1
 
-def make_directory(base_path, success_dir="success_img/", fail_dir="fail_img/"):
+def make_directory(base_path, success_dir="Yolo_data/", fail_dir="No_Yolo_data/"):
     # def make_directory(base_path, success_dir="success_img/", fail_dir="fail_img/", **kwargs):
     # '\'를 문자열로 받을 시 문제 방지 위해 '/'로 변환
     base_path.replace('\\', '/')
@@ -121,16 +121,15 @@ def read_yolo_data(save_dir_list, img_path, image_name):
     else:
         return img, bbox_list, save_path
 
-def SaveImage(img, bbox, save_path, name):
+def SaveImage(img, save_path, name, bbox = []):
     name = name[:-4]
     cv2.imwrite(save_path + name + ".jpg", img)
 
-    print(name)
+    if bbox != []:
+        with open(save_path + name + ".txt",'w') as f:
+            for i in range(len(bbox)):
+                bbox[i][0] = int(bbox[i][0])
+                for j in range(5):
+                    f.write(str(bbox[i][j]) + " ")
 
-    with open(save_path + name + ".txt",'w') as f:
-        for i in range(len(bbox)):
-            bbox[i][0] = int(bbox[i][0])
-            for j in range(5):
-                f.write(str(bbox[i][j]) + " ")
-
-            f.write("\n")
+                f.write("\n")
