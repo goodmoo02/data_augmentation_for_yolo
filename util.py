@@ -115,7 +115,7 @@ def read_yolo_data(save_dir_list, img_path, image_name):
                 break
     # txt 파일은 있으나 비어 있는 경우 or 파일이 열리지 않은 경우 or 파일이 없는 경우
     if not len(bbox_list):
-        save_path = save_dir_list[0]
+        save_path = save_dir_list[1]
         return img, [], save_path
     # bbox가 제대로 읽어진 경우
     else:
