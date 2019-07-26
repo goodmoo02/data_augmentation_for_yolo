@@ -129,6 +129,7 @@ def SaveImage(img, bbox, save_path, name):
 
     with open(save_path + name + ".txt",'w') as f:
         for i in range(len(bbox)):
+            bbox[i][0] = int(bbox[i][0])
             for j in range(5):
                 f.write(str(bbox[i][j]) + " ")
 
