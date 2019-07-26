@@ -11,7 +11,7 @@ def check_directory(path):
         return 1
 
 def make_directory(base_path, success_dir="success_img/", fail_dir="fail_img/"):
-
+    # def make_directory(base_path, success_dir="success_img/", fail_dir="fail_img/", **kwargs):
     # '\'를 문자열로 받을 시 문제 방지 위해 '/'로 변환
     base_path.replace('\\', '/')
     success_dir.replace('\\', '/')
