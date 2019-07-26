@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import Qt
+from util import *
+from data_aug_for_yolo import *
 
 flag = 1
 class MyApp(QWidget):
@@ -19,7 +21,7 @@ class MyApp(QWidget):
         self.folder_label = QLabel('folder')
         self.folder_line = QLineEdit()
         self.folder_buttton = QPushButton("&Folder")
-        self.folder_buttton.clicked.connect(self.pushButtonClicked)
+        self.folder_buttton.clicked.connect(self.folder_btn_clicked)
         grid.addWidget(self.folder_label, 0, 0)
         grid.addWidget(self.folder_line, 0, 1, 1, 5)
         grid.addWidget(self.folder_buttton, 0, 6)
@@ -28,10 +30,10 @@ class MyApp(QWidget):
         # grid.addWidget(self.warn1_label, 1, 1, 1, 5)
 
         self.resize_label = QLabel('resize')
-        self.resize_line = QLineEdit()
+        self.resize_line = QLineEdit('1.0')
         self.resize_line.setFixedWidth(28)
         self.rotate_label = QLabel('rotate')
-        self.rotate_line = QLineEdit()
+        self.rotate_line = QLineEdit('45')
         self.rotate_line.setFixedWidth(28)
         grid.addWidget(self.resize_label, 2, 1)
         grid.addWidget(self.resize_line, 2, 2)
@@ -57,7 +59,7 @@ class MyApp(QWidget):
         self.setGeometry(300, 300, 400, 200)
         self.show()
 
-    def pushButtonClicked(self):
+    def folder_btn_clicked(self):
         fname = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
         self.folder_line.setText(fname)
 
@@ -68,6 +70,8 @@ class MyApp(QWidget):
             self.start_btn.setText("&Stop")
         else:
             self.start_btn.setText("&Start")
+        check_directory(self.folder_line.)
+        if
 
     def timerEvent(self, e):
 
