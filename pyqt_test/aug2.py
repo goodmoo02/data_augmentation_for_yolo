@@ -145,6 +145,7 @@ class Ui_MainWindow(object):
         self.pgbar = QProgressBar(self.option_box)
         self.pgbar.setGeometry(QRect(70, 303, 491, 20))
         self.pgbar.setObjectName("pgbar")
+        self.pgbar.setMaximum(100)
 
         self.start_btn = QPushButton(self.option_box)
         self.start_btn.setGeometry(QRect(570, 303, 75, 23))
@@ -292,6 +293,8 @@ class Ui_MainWindow(object):
 
 
 
+
+
     def start_btn_clicked(self):
         self.pgbar_num = 0
         self.flag *= -1
@@ -332,11 +335,13 @@ class Ui_MainWindow(object):
 
                     img, bbox = RandomScale(img, bbox, self.scale_line.value())
 
-                    print(self.x_line.value(), self.y_line.value(), self.resize_line.value())
-                    if self.x_line.value()!= 0 and self.y_line.value()!= 0:
-                        img = RandomResize(img, self.x_line.value(), self.y_line.value(), self.resize_line.value())
+                    # print(self.x_line.value(), self.y_line.value(), self.resize_line.value())
+                    if self.x_line.value()!= 0 and self.y_line.value()!= 0 and self.resize_line.value() == 1:
+                        img = RandomResize(img, self.x_line.value(), self.y_line.value(), self.resize_line.value(), 0)
+                        print("작동")
+                        print(img.shape)
                     else:
-                        img = RandomResize(img, (img.shape)[1], (img.shape)[0], self.resize_line.value())
+                        img = RandomResize(img, (img.shape)[1], (img.shape)[0], self.resize_line.value(), 0)
 
                     img = RandomRotate(img, self.rotate_line.value())
 
@@ -354,8 +359,18 @@ class Ui_MainWindow(object):
                         SaveImage(img, save_path, image_name)
                     else:
                         SaveImage(img, save_path, image_name, bbox)
-                    self.pgbar_num += 1
-                    # self.pbar.setValue(self.pgbar_num)
+                    img_num = len(img_list)
+                    cnt_up = 100 / img_num
+                    self.pgbar_num += cnt_up
+                    print(self.pgbar_num)
+                    self.pgbar.setValue(self.pgbar_num)
+
+                    sys._excepthook = sys.excepthook
+
+
+
+                self.flag *= -1
+                self.start_btn.setText("&Start")
 
 
     def timerEvent(self, e):
@@ -368,9 +383,14 @@ class Ui_MainWindow(object):
 
         self.step = self.step + 1
 
-
+def exception_hook(exctype, value, traceback):
+    print(exctype, value, traceback)
+    sys._excepthook(exctype, value, traceback)
+    sys.exit(1)
 if __name__ == "__main__":
     import sys
+
+    sys.excepthook = exception_hook
     app = QApplication(sys.argv)
     MainWindow = QMainWindow()
     ui = Ui_MainWindow()

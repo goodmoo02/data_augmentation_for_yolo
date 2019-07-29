@@ -2,6 +2,8 @@ import os
 import sys
 import errno
 import cv2
+import numpy as np
+import re
 
 def check_directory(path):
     if not (os.path.isdir(path)):
@@ -38,15 +40,14 @@ def make_directory(base_path, success_dir="Yolo_data/", fail_dir="No_Yolo_data/"
 
 def make_image_list(img_path, ext="jpg"):
     img_path.replace('\\', '/')
-    ext_list = ("png", "jpg", "jpeg", "bmp")
+    ext_list = ["png", "jpg", "jpeg", "bmp"]
 
     # ext(확장자명) 추가 코드
     if ext not in ext_list:
-        ext_list = ext_list + tuple(ext)
+        ext_list.append(ext)
         ext = ", ." + ext
-        print(type(ext_list))
-        print(ext_list)
-    image_list = []
+        ext_list = tuple(ext_list)
+
     img_dir = os.listdir(img_path)
 
     # ext 확인하여 ext_list에 있을 경우 img_list에 추가
@@ -61,7 +62,12 @@ def make_image_list(img_path, ext="jpg"):
         return None
     return image_list
 
+def hangeul_file_path_imread(file_path):
+    stream = open(file_path.encode("utf-8"), "rb")
+    bytes = bytearray(stream.read())
+    numpyArray = np.asarray(bytes, dtype=np.uint8)
 
+    return cv2.imdecode(numpyArray, cv2.IMREAD_UNCHANGED)
 
 
 def read_yolo_data(save_dir_list, img_path, image_name):
@@ -71,11 +77,15 @@ def read_yolo_data(save_dir_list, img_path, image_name):
         img_path = img_path + "/"
     img_dir = os.listdir(img_path)
     # image 정보 읽기 및 정보 유무 확인
-    img = cv2.imread(img_path + image_name)
+    file_path = img_path + image_name
+    if re.compile('[^ㄱ-ㅣ가-힣]+').sub('', file_path):
+        img = hangeul_file_path_imread(file_path)
+    else:
+        img = cv2.imread(file_path)
     if img is None:
         print("%s 이미지를 읽을 수 없습니다." % image_name)
         save_path = None
-    # print(img)
+
     # bbox 정보, save path 저장
     for file in img_dir:
         if image_name[:-4]+".txt" == file:
@@ -105,7 +115,6 @@ def read_yolo_data(save_dir_list, img_path, image_name):
                             line1[idx] = float(value)
                         bbox_list.append(line1)
                         save_path = save_dir_list[0]
-                        # print(bbox_list)
                     # 요소가 부족한 경우 bbox None으로 반환
                     else:
                         save_path = save_dir_list[1]
@@ -122,7 +131,15 @@ def read_yolo_data(save_dir_list, img_path, image_name):
 
 def SaveImage(img, save_path, name, bbox = []):
     name = name[:-4]
-    cv2.imwrite(save_path + name + ".jpg", img)
+    image_name = name + ".jpg"
+    file_path = save_path + image_name
+    if re.compile('[^ㄱ-ㅣ가-힣]+').sub('', file_path):
+        script_path = os.getcwd()
+        os.chdir(save_path)
+        cv2.imwrite(image_name, img)
+        os.chdir(script_path)
+    else:
+        cv2.imwrite(file_path, img)
 
     if bbox != []:
         with open(save_path + name + ".txt",'w') as f:
