@@ -373,20 +373,11 @@ class Ui_MainWindow(object):
                 self.start_btn.setText("&Start")
 
 
-    def timerEvent(self, e):
-
-        if self.step >= 100:
-
-            self.timer.stop()
-            self.btn.setText('Finished')
-            return
-
-        self.step = self.step + 1
-
 def exception_hook(exctype, value, traceback):
     print(exctype, value, traceback)
     sys._excepthook(exctype, value, traceback)
     sys.exit(1)
+
 if __name__ == "__main__":
     import sys
 
