@@ -17,10 +17,11 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         self.flag = -1
         self.res = 1
-        self.rot = 45
+        self.rot = 0
         self.sc = 1
         self.h_flip_flag = -1
         self.v_flip_flag = -1
+        self.pgbar_num = 0
 
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(693, 450)
@@ -143,7 +144,6 @@ class Ui_MainWindow(object):
 
         self.pgbar = QProgressBar(self.option_box)
         self.pgbar.setGeometry(QRect(70, 303, 491, 20))
-        self.pgbar.setProperty("value", 24)
         self.pgbar.setObjectName("pgbar")
 
         self.start_btn = QPushButton(self.option_box)
@@ -176,6 +176,10 @@ class Ui_MainWindow(object):
         self.rename_label.setGeometry(QRect(11, 183, 50, 31))
         self.rename_label.setObjectName("rename_label")
 
+        self.rename_exp_label = QLabel(self.option_box)
+        self.rename_exp_label.setGeometry(QRect(80, 210, 50, 31))
+        self.rename_exp_label.setObjectName("rename_exp_label")
+
         self.all_rb = QRadioButton(self.option_box)
         self.all_rb.setGeometry(QRect(80, 190, 90, 16))
         self.all_rb.setObjectName("all_rb")
@@ -192,6 +196,7 @@ class Ui_MainWindow(object):
         self.what_line = QLineEdit(self.option_box)
         self.what_line.setGeometry(QRect(397, 188, 71, 20))
         self.what_line.setObjectName("what_line")
+        self.what_line.setEnabled(False)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -223,7 +228,7 @@ class Ui_MainWindow(object):
         self.resize_line.setValue(1)
         self.resize_line.setDecimals(1)
         self.rotate_label.setText(_translate("MainWindow", "Rotate"))
-        self.rotate_line.setValue(45)
+        self.rotate_line.setValue(0)
         self.degree_label.setText(_translate("MainWindow", "  °(도) (Default)"))
         self.flip_label.setText(_translate("MainWindow", "Flip"))
         self.v_flip_label.setText(_translate("MainWindow", "v_flip"))
@@ -237,10 +242,10 @@ class Ui_MainWindow(object):
         self.scale_line.setDecimals(1)
         self.sc_times_label.setText(_translate("MainWindow", "times(배) (Default)"))
         self.rename_label.setText(_translate("MainWindow", "Rename"))
+        self.rename_exp_label.setText(_translate("MainWindow", "all"))
         self.all_rb.setText(_translate("MainWindow", " &All"))
         self.what_rb.setText(_translate("MainWindow", " &What you want"))
         self.no_rb.setText(_translate("MainWindow", " &No"))
-        # self.menuImage_Data_Augmentation.setTitle(_translate("MainWindow", "Image Data Augmentation"))
 
     def utilUi(self, MainWindow):
         self.dir_line.textChanged[str].connect(self.dir_line_changed)
@@ -249,6 +254,9 @@ class Ui_MainWindow(object):
         self.resize_line.valueChanged.connect(self.resize_line_changed)
         self.h_flip_cb.stateChanged.connect(self.h_flip_state_changed)
         self.v_flip_cb.stateChanged.connect(self.v_flip_state_changed)
+        self.all_rb.clicked.connect(self.rename_changed)
+        self.no_rb.clicked.connect(self.rename_changed)
+        self.what_rb.clicked.connect(self.rename_changed)
 
     def dir_line_changed(self):
         self.start_btn.setEnabled(True)
@@ -271,8 +279,23 @@ class Ui_MainWindow(object):
     def h_flip_state_changed(self):
         self.h_flip_flag *= -1
 
+    def rename_changed(self):
+        if self.all_rb.isChecked():
+            self.what_line.setEnabled(False)
+            self.rename_exp_label.setText("all")
+        if self.no_rb.isChecked():
+            self.what_line.setEnabled(False)
+            self.rename_exp_label.setText("no")
+        if self.what_rb.isChecked():
+            self.what_line.setEnabled(True)
+            self.rename_exp_label.setText("what")
+
+
+
     def start_btn_clicked(self):
+        self.pgbar_num = 0
         self.flag *= -1
+
         if self.flag == 1:
             self.start_btn.setText("&Stop")
         else:
@@ -291,35 +314,48 @@ class Ui_MainWindow(object):
             print(self.v_flip_flag)
 
             dir_list = make_directory(addr)
-            img_list = make_image_list(addr)
-            for image_name in img_list:
-                img, bbox, save_path = read_yolo_data(dir_list, addr, image_name)
-                if self.h_flip_flag == 1:
-                    img, bbox = RandomFlip(img, bbox, mode=1)
+            img_list = make_image_list(addr, "gif")
+            if img_list is None:
+                self.dir_warn_label.setStyleSheet("color: red")
+                self.dir_warn_label.setText("There's no image file (.jpg, .png, .bmp)")
+                self.start_btn.setEnabled(False)
+                self.flag *= -1
+                self.start_btn.setText("&Start")
+            else:
+                for image_name in img_list:
+                    img, bbox, save_path = read_yolo_data(dir_list, addr, image_name)
+                    if self.h_flip_flag == 1:
+                        img, bbox = RandomFlip(img, bbox, mode=1)
 
-                if self.v_flip_flag == 1:
-                    img, bbox = RandomFlip(img, bbox, mode=0)
+                    if self.v_flip_flag == 1:
+                        img, bbox = RandomFlip(img, bbox, mode=0)
 
-                img, bbox = RandomScale(img, bbox, self.scale_line.value())
+                    img, bbox = RandomScale(img, bbox, self.scale_line.value())
 
-                print(self.x_line.value(), self.y_line.value(), self.resize_line.value())
-                if self.x_line.value()!= 0 and self.y_line.value()!= 0:
-                    img = RandomResize(img, self.x_line.value(), self.y_line.value(), self.resize_line.value())
-                else:
-                    img = RandomResize(img, (img.shape)[1], (img.shape)[0], self.resize_line.value())
+                    print(self.x_line.value(), self.y_line.value(), self.resize_line.value())
+                    if self.x_line.value()!= 0 and self.y_line.value()!= 0:
+                        img = RandomResize(img, self.x_line.value(), self.y_line.value(), self.resize_line.value())
+                    else:
+                        img = RandomResize(img, (img.shape)[1], (img.shape)[0], self.resize_line.value())
 
-                img = RandomRotate(img, self.rotate_line.value())
-                cv2.imshow("img1", img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
-                print(image_name)
-                if self.all_rb.isChecked():
-                    img_name = image_name[:-4] + "_aug"
-                    print(img_name)
-                if bbox == []:
-                    SaveImage(img, save_path, img_name)
-                else:
-                    SaveImage(img, save_path, img_name, bbox)
+                    img = RandomRotate(img, self.rotate_line.value())
+
+                    print(image_name)
+                    if self.all_rb.isChecked():
+                        image_name = image_name[:-4] + "_aug____"
+
+                    if self.no_rb.isChecked():
+                        pass
+
+                    if self.what_rb.isChecked():
+                        image_name = image_name[:-4] + self.what_line.text() + "____"
+
+                    if bbox == []:
+                        SaveImage(img, save_path, image_name)
+                    else:
+                        SaveImage(img, save_path, image_name, bbox)
+                    self.pgbar_num += 1
+                    # self.pbar.setValue(self.pgbar_num)
 
 
     def timerEvent(self, e):
@@ -331,16 +367,7 @@ class Ui_MainWindow(object):
             return
 
         self.step = self.step + 1
-        self.pbar.setValue(self.step)
 
-    def doAction(self):
-
-        if self.timer.isActive():
-            self.timer.stop()
-            self.btn.setText('Start')
-        else:
-            self.timer.start(100, self)
-            self.btn.setText('Stop')
 
 if __name__ == "__main__":
     import sys
