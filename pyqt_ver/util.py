@@ -73,6 +73,8 @@ def read_yolo_data(save_dir_list, img_path, image_name):
     img_dir = os.listdir(img_path)
     # image 정보 읽기 및 정보 유무 확인
     img = cv2.imread(img_path + image_name)
+
+
     if img is None:
         print("%s 이미지를 읽을 수 없습니다." % image_name)
         save_path = None
