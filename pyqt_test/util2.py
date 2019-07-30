@@ -39,8 +39,8 @@ def make_image_list(ext="jpg"):
     if ext not in ext_list:
         ext_list.append(ext)
         ext = ", ." + ext
-        ext_list = tuple(ext_list)
 
+    ext_list = tuple(ext_list)
     img_dir = os.listdir('.')
 
     # ext 확인하여 ext_list에 있을 경우 img_list에 추가
@@ -75,7 +75,6 @@ def read_yolo_data(save_dir_list, image_name):
     # bbox 정보, save path 저장
     for file in img_dir:
         if image_name[:-4]+".txt" == file:
-            print("filename: " + file)
             try:
                 f = open(file, "r")
             except FileNotFoundError:

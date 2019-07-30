@@ -1,43 +1,40 @@
 import sys
-import time
-
-from PyQt5.QtWidgets import (QApplication, QDialog,
-                             QProgressBar, QPushButton)
-
-TIME_LIMIT = 100
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout
+from PyQt5.QtGui import QIcon, QPixmap
 
 
-class Actions(QDialog):
-    """
-    Simple dialog that consists of a Progress Bar and a Button.
-    Clicking on the button results in the start of a timer and
-    updates the progress bar.
-    """
+class MyApp(QWidget):
 
     def __init__(self):
         super().__init__()
+
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Progress Bar')
-        self.progress = QProgressBar(self)
-        self.progress.setGeometry(0, 0, 300, 25)
-        self.progress.setMaximum(100)
-        self.button = QPushButton('Start', self)
-        self.button.move(0, 30)
+
+        btn1 = QPushButton('&Button1', self)
+        btn1.setCheckable(True)
+        btn1.toggle()
+
+        btn2 = QPushButton(self)
+        btn2.setText('Button&2')
+
+        btn3 = QPushButton('Button3', self)
+        btn3.setEnabled(False)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(btn1)
+        vbox.addWidget(btn2)
+        vbox.addWidget(btn3)
+
+        self.setLayout(vbox)
+        self.setWindowTitle('QPushButton')
+        self.setGeometry(300, 300, 300, 200)
         self.show()
 
-        self.button.clicked.connect(self.onButtonClick)
 
-    def onButtonClick(self):
-        count = 0
-        while count < TIME_LIMIT:
-            count += 1
-            time.sleep(1)
-            self.progress.setValue(count)
+if __name__ == '__main__':
 
-
-if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = Actions()
+    ex = MyApp()
     sys.exit(app.exec_())

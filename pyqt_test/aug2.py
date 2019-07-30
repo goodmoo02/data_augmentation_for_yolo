@@ -11,11 +11,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from util2 import *
 from data_aug_for_yolo import *
-import cv2
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        self.flag = -1
+        self.flag = False
         self.res = 1
         self.rot = 0
         self.sc = 1
@@ -143,12 +142,12 @@ class Ui_MainWindow(object):
         self.rrs_label.setObjectName("rrs_label")
 
         self.pgbar = QProgressBar(self.option_box)
-        self.pgbar.setGeometry(QRect(70, 303, 491, 20))
+        self.pgbar.setGeometry(QRect(70, 303, 450, 20))
         self.pgbar.setObjectName("pgbar")
         self.pgbar.setMaximum(100)
 
         self.start_btn = QPushButton(self.option_box)
-        self.start_btn.setGeometry(QRect(570, 303, 75, 23))
+        self.start_btn.setGeometry(QRect(530, 301, 70, 23))
         self.start_btn.setObjectName("start_btn")
 
         self.pg_label = QLabel(self.option_box)
@@ -209,7 +208,6 @@ class Ui_MainWindow(object):
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        # self.menubar.addAction(self.menuImage_Data_Augmentation.menuAction())
 
         self.retranslateUi(MainWindow)
         self.utilUi(MainWindow)
@@ -236,6 +234,7 @@ class Ui_MainWindow(object):
         self.h_flip_label.setText(_translate("MainWindow", "h_flip"))
         self.rrs_label.setText(_translate("MainWindow", "RRS"))
         self.start_btn.setText(_translate("MainWindow", "&Start"))
+        # self.stop_btn.setText(_translate("MainWindow", "&Stop"))
         self.pg_label.setText(_translate("MainWindow", "Progress"))
         self.rs_times_label.setText(_translate("MainWindow", "times(배) (Default)"))
         self.scale_label.setText(_translate("MainWindow", "Scale"))
@@ -252,6 +251,7 @@ class Ui_MainWindow(object):
         self.dir_line.textChanged[str].connect(self.dir_line_changed)
         self.find_btn.clicked.connect(self.dir_btn_clicked)
         self.start_btn.clicked.connect(self.start_btn_clicked)
+        # self.stop_btn.clicked.connect(self.stop_btn_clicked)
         self.resize_line.valueChanged.connect(self.resize_line_changed)
         self.h_flip_cb.stateChanged.connect(self.h_flip_state_changed)
         self.v_flip_cb.stateChanged.connect(self.v_flip_state_changed)
@@ -291,39 +291,30 @@ class Ui_MainWindow(object):
             self.what_line.setEnabled(True)
             self.rename_exp_label.setText("what")
 
-
-
-
-
     def start_btn_clicked(self):
         self.pgbar_num = 0
-        self.flag *= -1
+        self.flag = True
+        self.augmentation()
 
-        if self.flag == 1:
-            self.start_btn.setText("&Stop")
-        else:
-            self.start_btn.setText("&Start")
-
+    def augmentation(self):
         addr = self.dir_line.text()
         if check_directory(addr) == -1:
             self.dir_warn_label.setStyleSheet("color: red")
             self.dir_warn_label.setText("There's no directory")
             self.start_btn.setEnabled(False)
-            self.flag *= -1
+            self.flag = False
             self.start_btn.setText("&Start")
         else:
             self.dir_warn_label.clear()
-            print(self.h_flip_flag)
-            print(self.v_flip_flag)
 
             dir_list = make_directory()
-            img_list = make_image_list("gif")
+            img_list = make_image_list()
             if img_list is None:
                 self.dir_warn_label.setStyleSheet("color: red")
                 self.dir_warn_label.setText("There's no image file (.jpg, .png, .bmp)")
                 self.start_btn.setEnabled(False)
-                self.flag *= -1
-                self.start_btn.setText("&Start")
+                self.flag = False
+
             else:
                 for image_name in img_list:
                     img, bbox, save_path = read_yolo_data(dir_list, image_name)
@@ -335,17 +326,13 @@ class Ui_MainWindow(object):
 
                     img, bbox = RandomScale(img, bbox, self.scale_line.value())
 
-                    # print(self.x_line.value(), self.y_line.value(), self.resize_line.value())
                     if self.x_line.value()!= 0 and self.y_line.value()!= 0 and self.resize_line.value() == 1:
                         img = RandomResize(img, self.x_line.value(), self.y_line.value(), self.resize_line.value(), 0)
-                        print("작동")
-                        print(img.shape)
                     else:
                         img = RandomResize(img, (img.shape)[1], (img.shape)[0], self.resize_line.value(), 0)
 
                     img = RandomRotate(img, self.rotate_line.value())
 
-                    print(image_name)
                     if self.all_rb.isChecked():
                         image_name = image_name[:-4] + "_aug____"
 
@@ -362,16 +349,13 @@ class Ui_MainWindow(object):
                     img_num = len(img_list)
                     cnt_up = 100 / img_num
                     self.pgbar_num += cnt_up
-                    print(self.pgbar_num)
+
                     self.pgbar.setValue(self.pgbar_num)
 
-                    sys._excepthook = sys.excepthook
+                    if self.flag == False:
+                        return
 
-
-
-                self.flag *= -1
-                self.start_btn.setText("&Start")
-
+                self.flag = False
 
 def exception_hook(exctype, value, traceback):
     print(exctype, value, traceback)
