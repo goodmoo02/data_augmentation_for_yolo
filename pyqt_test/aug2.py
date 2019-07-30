@@ -9,7 +9,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from util import *
+from util2 import *
 from data_aug_for_yolo import *
 import cv2
 
@@ -316,8 +316,8 @@ class Ui_MainWindow(object):
             print(self.h_flip_flag)
             print(self.v_flip_flag)
 
-            dir_list = make_directory(addr)
-            img_list = make_image_list(addr, "gif")
+            dir_list = make_directory()
+            img_list = make_image_list("gif")
             if img_list is None:
                 self.dir_warn_label.setStyleSheet("color: red")
                 self.dir_warn_label.setText("There's no image file (.jpg, .png, .bmp)")
@@ -326,7 +326,7 @@ class Ui_MainWindow(object):
                 self.start_btn.setText("&Start")
             else:
                 for image_name in img_list:
-                    img, bbox, save_path = read_yolo_data(dir_list, addr, image_name)
+                    img, bbox, save_path = read_yolo_data(dir_list, image_name)
                     if self.h_flip_flag == 1:
                         img, bbox = RandomFlip(img, bbox, mode=1)
 
